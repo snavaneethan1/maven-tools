@@ -59,7 +59,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
 
-import org.apache.maven.execution.MavenSession;
 
 import org.apache.maven.project.MavenProject;
 import org.jaffa.plugins.util.DwrFragments;
@@ -76,7 +75,7 @@ public class FragmentMergeMojo extends AbstractMojo{
 
     private static final String META_INF_LOCATION = File.separator+"META-INF"+File.separator;
 
-    private static final String PROPERTIES_FILE = "resources.properties";
+    private static final String PROPERTIES_FILE = "ApplicationResources.properties";
 
     private static final String DWR_FILE = "dwr.xml";
 
@@ -90,29 +89,25 @@ public class FragmentMergeMojo extends AbstractMojo{
     File resources;
 
 
-    /**
-     * Directory containing the generated JAR.
-     */
-    @Parameter( defaultValue = "${project.build.directory}", required = true )
-    private File outputDirectory;
 
     /**
      * Directory containing the classes and resource files that should be packaged into the JAR.
      */
     @Parameter( defaultValue = "${project.build.outputDirectory}", required = true )
-    private File classesDirectory;
+    File classesDirectory;
 
     /**
      * The {@link {MavenProject}.
      */
     @Parameter( defaultValue = "${project}", readonly = true, required = true )
-    private MavenProject project;
+    MavenProject project;
+
 
     /**
-     * The {@link MavenSession}.
+     * Target directory .
      */
-    @Parameter( defaultValue = "${session}", readonly = true, required = true )
-    private MavenSession session;
+    File targetDirectory;
+
 
 
     /**
@@ -123,14 +118,16 @@ public class FragmentMergeMojo extends AbstractMojo{
         getLog().info("Initialize Fragment Merging Process");
         try {
 
-            File target = new File(project.getBuild().getDirectory());
+            if(targetDirectory == null) {
+                targetDirectory = new File(project.getBuild().getDirectory());
+            }
 
             File resources = new File(classesDirectory + META_INF_LOCATION + PROPERTIES_FILE);
             File dwr = new File(classesDirectory + META_INF_LOCATION + DWR_FILE);
             File jawr = new File(classesDirectory + META_INF_LOCATION + JAWR_FILE);
 
-            if (target.exists()) {
-                Collection<File> fragFiles = FileUtils.listFiles(new File(project.getBuild().getDirectory()), new String[]{"pfragment", "xfragment"}, true);
+            if (targetDirectory.exists()) {
+                Collection<File> fragFiles = FileUtils.listFiles(targetDirectory, new String[]{"pfragment", "xfragment"}, true);
 
                 Iterator<File> iter = fragFiles.iterator();
                 while (iter.hasNext()) {
