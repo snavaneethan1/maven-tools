@@ -52,6 +52,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Helper class to merge fragments for fragmentmerge maven plugin
@@ -60,22 +61,48 @@ public class Fragments {
 
 
     /**
-     * Base class Utility method to merge fragments
+     * General Utility method to merge fragments
      * @param mergedFile
      * @param frag
+     * @throws IOException
+     */
+    private static void merge(File mergedFile, File frag) throws IOException {
+        if(frag!=null) {
+            FileUtils.writeStringToFile(mergedFile, FileUtils.readFileToString(frag), true);
+        }
+    }
+
+    /**
+     * General Utility method to write tag in the file
+     * @param mergedFile
+     * @param tag
+     * @throws IOException
+     */
+    public static void writeTag(File mergedFile, String tag) throws IOException {
+        if(tag!=null){
+            FileUtils.writeStringToFile(mergedFile, tag, true);
+        }
+    }
+
+    /**
+     * Utility method to merge fragment resources
+     * @param finalFile
+     * @param fragFiles
      * @param startTag
      * @param endTag
      * @throws IOException
      */
-    public static void merge(File mergedFile, File frag, String startTag, String endTag) throws IOException {
-        if(!mergedFile.exists() && frag!=null){
-            FileUtils.writeStringToFile(mergedFile, startTag, true);
+    public static void mergeFragmentResources(File finalFile, Collection<File> fragFiles, String startTag, String endTag) throws IOException{
+        //Write start tag to the final merged file
+        writeTag(finalFile, startTag);
+
+        //Append each fragments
+        for(File fragFile : fragFiles){
+            merge(finalFile, fragFile);
+            fragFile.delete();
         }
-        if(frag == null && mergedFile.exists()){
-            FileUtils.writeStringToFile(mergedFile, endTag, true);
-        }
-        if(frag!=null) {
-            FileUtils.writeStringToFile(mergedFile, FileUtils.readFileToString(frag), true);
-        }
+
+        //Write end tag to the final merged file
+        writeTag(finalFile, endTag);
     }
 }

@@ -50,21 +50,25 @@ package org.jaffa.plugins;
  */
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
 
 
 import org.apache.maven.project.MavenProject;
-import org.jaffa.plugins.util.DwrFragments;
-import org.jaffa.plugins.util.AppResourceFragments;
-import org.jaffa.plugins.util.JawrResourceFragments;
+import org.jaffa.plugins.util.Fragments;
 
+import static org.jaffa.plugins.util.Constants.*;
 
 /**
  * Maven Plugin to merge the resource files during Maven Life Cycle Phase of Process Classes and place them under META-INF
@@ -73,13 +77,6 @@ import org.jaffa.plugins.util.JawrResourceFragments;
 public class FragmentMergeMojo extends AbstractMojo{
 
 
-    private static final String META_INF_LOCATION = File.separator+"META-INF"+File.separator;
-
-    private static final String PROPERTIES_FILE = "ApplicationResources.properties";
-
-    private static final String DWR_FILE = "dwr.xml";
-
-    private static final String JAWR_FILE = "jawr.properties";
 
 
     /**
@@ -122,38 +119,130 @@ public class FragmentMergeMojo extends AbstractMojo{
                 targetDirectory = new File(project.getBuild().getDirectory());
             }
 
-            File resources = new File(classesDirectory + META_INF_LOCATION + PROPERTIES_FILE);
+            File applicationResources = new File(classesDirectory + META_INF_LOCATION + PROPERTIES_FILE);
             File dwr = new File(classesDirectory + META_INF_LOCATION + DWR_FILE);
             File jawr = new File(classesDirectory + META_INF_LOCATION + JAWR_FILE);
+            File strutsConfig = new File(classesDirectory + META_INF_LOCATION + STRUTS_CONFIG_FILE);
+            File tilesDef = new File(classesDirectory + META_INF_LOCATION + TILE_DEFS_FILE);
+            File components = new File(classesDirectory + META_INF_LOCATION + COMPONENTS_FILE);
 
             if (targetDirectory.exists()) {
-                Collection<File> fragFiles = FileUtils.listFiles(targetDirectory, new String[]{"pfragment", "xfragment"}, true);
 
-                Iterator<File> iter = fragFiles.iterator();
-                while (iter.hasNext()) {
-                    File frag = iter.next();
-                    if (frag.getName() != null && frag.getName().startsWith("ApplicationResources")) {
-                        AppResourceFragments.merge(resources, frag);
-                    } else if (frag.getName() != null && frag.getName().startsWith("dwr")) {
-                        DwrFragments.merge(dwr, frag);
-                    } else if (frag.getName() != null && frag.getName().startsWith("jawr")) {
-                        JawrResourceFragments.merge(jawr, frag);
-                    }
-                    frag.delete();
-                }
-                //Complete Dwr Merging by placing an end tag
-                DwrFragments.merge(dwr,null);
+                //Merging ApplicationResourceFragments
+                mergeApplicationResources(applicationResources);
 
-                //Complete Resources Merging by placing an end tag
-                AppResourceFragments.merge(resources,null);
+                //Merging Dwr Resource Fragments
+                mergeDwrResources(dwr);
 
-                //Complete Resources Merging by placing an end tag
-                JawrResourceFragments.merge(jawr, null);
+                //Merging jawr Resource Fragments
+                mergeJawrResources(jawr);
+
+                //Start Merging Struts-Config
+                Fragments.writeTag(strutsConfig, STRUTS_CONFIG_START_TAG);
+                //Merging StrutsFormBean
+                mergeStrutsFormResources(strutsConfig);
+
+                //Merging StrutsGlobalForward
+                mergeStrutsGlobalForwardResources(strutsConfig);
+
+                //Merging StrutsConfigAction
+                mergeStrutsConfigActionResources(strutsConfig);
+                //End Merging Struts-Config
+                Fragments.writeTag(strutsConfig, STRUTS_CONFIG_END_TAG);
+
+                //Merging tiles-def
+                mergeTileDefsResources(tilesDef);
+
+                //Merging componentDefinitions
+                mergeComponentsResources(components);
+
+                //Merge ApplicationRules
+                mergeApplicationRules();
             }
         }catch(IOException io){
             getLog().error(io);
         }
         getLog().info("Completed Fragment Merging Process");
     }
+
+
+    private void mergeApplicationResources(File applicationResources) throws IOException {
+        getLog().debug("Starting ApplicationResources Merge Process");
+        IOFileFilter applicationResourceFileFilter = FileFilterUtils.and(FileFilterUtils.prefixFileFilter(APPLICATION_RESOURCES), FileFilterUtils.suffixFileFilter(PFRAGMENT));
+        Collection<File> applicationResourceFragFiles = FileUtils.listFiles(targetDirectory, applicationResourceFileFilter, TrueFileFilter.INSTANCE);
+        Fragments.mergeFragmentResources(applicationResources, applicationResourceFragFiles, APP_RESOURCES_START_TAG, APP_RESOURCES_END_TAG);
+        getLog().debug("End of ApplicationResources Merge Process");
+    }
+
+    private void mergeDwrResources(File dwr) throws IOException {
+        getLog().debug("Starting ApplicationResources Merge Process");
+        IOFileFilter dwrResourceFileFilter = FileFilterUtils.and(FileFilterUtils.prefixFileFilter(DWR), FileFilterUtils.suffixFileFilter(XFRAGMENT));
+        Collection<File> dwrResourceFragFiles = FileUtils.listFiles(targetDirectory, dwrResourceFileFilter, TrueFileFilter.INSTANCE);
+        Fragments.mergeFragmentResources(dwr, dwrResourceFragFiles, DWR_START_TAG, DWR_END_TAG);
+        getLog().debug("End of ApplicationResources Merge Process");
+    }
+
+    private void mergeJawrResources(File jawr) throws IOException {
+        getLog().debug("Starting ApplicationResources Merge Process");
+        IOFileFilter jawrResourceFileFilter = FileFilterUtils.and(FileFilterUtils.prefixFileFilter(JAWR), FileFilterUtils.suffixFileFilter(PFRAGMENT));
+        Collection<File> jawrResourceFragFiles = FileUtils.listFiles(targetDirectory, jawrResourceFileFilter, TrueFileFilter.INSTANCE);
+        Fragments.mergeFragmentResources(jawr, jawrResourceFragFiles, JAWR_START_TAG, JAWR_END_TAG);
+        getLog().debug("End of ApplicationResources Merge Process");
+    }
+
+    private void mergeStrutsFormResources(File strutsConfig) throws IOException {
+        getLog().debug("Starting StrutsFormResources Merge Process");
+        IOFileFilter strutsConfigFormBeanResourceFileFilter = FileFilterUtils.and(FileFilterUtils.prefixFileFilter(STRUTS_CONFIG_FORM_BEAN), FileFilterUtils.suffixFileFilter(XFRAGMENT));
+        Collection<File> strutsConfigFormBeanResourceFragFiles = FileUtils.listFiles(targetDirectory, strutsConfigFormBeanResourceFileFilter, TrueFileFilter.INSTANCE);
+        Fragments.mergeFragmentResources(strutsConfig, strutsConfigFormBeanResourceFragFiles, STRUTS_FORM_START_TAG, STRUTS_FORM_END_TAG);
+        getLog().debug("End of StrutsFormResources Merge Process");
+    }
+
+    private void mergeStrutsGlobalForwardResources(File strutsConfig) throws IOException {
+        getLog().debug("Starting StrutsGlobalForward Merge Process");
+        IOFileFilter strutsConfigGlobalForwardResourceFileFilter = FileFilterUtils.and(FileFilterUtils.prefixFileFilter(STRUTS_CONFIG_GLOBAL_FORWARD), FileFilterUtils.suffixFileFilter(XFRAGMENT));
+        Collection<File> strutsConfigGlobalForwardResourceFragFiles = FileUtils.listFiles(targetDirectory, strutsConfigGlobalForwardResourceFileFilter, TrueFileFilter.INSTANCE);
+        Fragments.mergeFragmentResources(strutsConfig, strutsConfigGlobalForwardResourceFragFiles, STRUTS_GLOBAL_FWD_START_TAG, STRUTS_GLOBAL_FWD_END_TAG);
+        getLog().debug("End of StrutsGlobalForward Merge Process");
+    }
+
+    private void mergeStrutsConfigActionResources(File strutsConfig) throws IOException {
+        getLog().debug("Starting StrutsConfig Merge Process");
+        IOFileFilter strutsConfigActionResourceFileFilter = FileFilterUtils.and(FileFilterUtils.prefixFileFilter(STRUTS_CONFIG_ACTION), FileFilterUtils.suffixFileFilter(XFRAGMENT));
+        Collection<File> strutsConfigActionResourceFragFiles = FileUtils.listFiles(targetDirectory, strutsConfigActionResourceFileFilter, TrueFileFilter.INSTANCE);
+        Fragments.mergeFragmentResources(strutsConfig, strutsConfigActionResourceFragFiles, STRUTS_ACTION_START_TAG, STRUTS_ACTION_END_TAG);
+        getLog().debug("End of StrutsConfig Merge Process");
+    }
+
+    private void mergeTileDefsResources(File tilesDef) throws IOException {
+        getLog().debug("Starting TilesDef Merge Process");
+        IOFileFilter componentTilesDefinitionsResourceFileFilter = FileFilterUtils.and(FileFilterUtils.prefixFileFilter(TILE_DEFS), FileFilterUtils.suffixFileFilter(XFRAGMENT));
+        Collection<File> componentTilesDefinitionsResourceFragFiles = FileUtils.listFiles(targetDirectory, componentTilesDefinitionsResourceFileFilter, TrueFileFilter.INSTANCE);
+        Fragments.mergeFragmentResources(tilesDef, componentTilesDefinitionsResourceFragFiles, STRUTS_TILE_DEFS_START_TAG, STRUTS_TILE_DEFS_END_TAG);
+        getLog().debug("End of TilesDef Merge Process");
+    }
+
+    private void mergeComponentsResources(File components) throws IOException {
+        getLog().debug("Starting Components Merge Process");
+        IOFileFilter componentDefinitionsResourceFileFilter = FileFilterUtils.and(FileFilterUtils.prefixFileFilter(COMPONENT_DEFINITIONS), FileFilterUtils.suffixFileFilter(XFRAGMENT));
+        Collection<File> componentTilesDefinitionsResourceFragFiles = FileUtils.listFiles(targetDirectory, componentDefinitionsResourceFileFilter, TrueFileFilter.INSTANCE);
+        Fragments.mergeFragmentResources(components, componentTilesDefinitionsResourceFragFiles, COMPONENTS_START_TAG, COMPONENTS_END_TAG);
+        getLog().debug("End of Components Merge Process");
+    }
+
+
+    private void mergeApplicationRules() throws IOException {
+        getLog().debug("Starting ApplicationRules Merge Process");
+        IOFileFilter applicationRulesFileFilter = FileFilterUtils.prefixFileFilter(APPLICATION_RULES);
+        Collection<File> applicationRulesFiles = FileUtils.listFiles(targetDirectory, applicationRulesFileFilter, TrueFileFilter.INSTANCE);
+        for(File applicationRulesFile : applicationRulesFiles){
+            File mergedApplicationRule = new File(classesDirectory + META_INF_LOCATION + applicationRulesFile.getName());
+            List<File> applicationRuleFilesList = new ArrayList<>();
+            applicationRuleFilesList.add(applicationRulesFile);
+            Fragments.mergeFragmentResources(mergedApplicationRule, applicationRuleFilesList, APP_RULES_START_TAG, APP_RULES_END_TAG);
+        }
+        getLog().debug("End of ApplicationResources Merge Process");
+    }
+
 }
 
