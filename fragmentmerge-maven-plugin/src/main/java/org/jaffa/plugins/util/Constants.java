@@ -151,13 +151,13 @@ public class Constants {
     public static String APP_RESOURCES_END_TAG = "\n## Merging Resources from pfragments END ##";
 
     /**
-     * Default start tag for merged ApplicationRules_{}.properties
+     * Default start tag for merged ApplicationRules_{}.properties, business_functions_{}.xml, roles_{}.xml
      */
-    public static String APP_RULES_START_TAG = "\n";
+    public static String EMPTY_START_TAG = "\n";
     /**
-     * Default end tag for merged ApplicationRules_{}.properties
+     * Default end tag for merged ApplicationRules_{}.properties, business_functions_{}.xml, roles_{}.xml
      */
-    public static String APP_RULES_END_TAG = "\n";
+    public static String EMPTY_END_TAG = "\n";
 
     /**
      * Default start tag for merged components.xml
@@ -202,6 +202,12 @@ public class Constants {
 
     //ApplicationResources
     public static final String APPLICATION_RULES = "ApplicationRules";
+
+    //Business Functions
+    public static final String BUSINESS_FUNCTIONS = "business-functions";
+
+    //Roles
+    public static final String ROLES = "roles";
 
     //Dwr
     public static final String DWR = "dwr";

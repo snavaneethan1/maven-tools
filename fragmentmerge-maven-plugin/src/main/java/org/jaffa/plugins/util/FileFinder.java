@@ -1,5 +1,4 @@
 package org.jaffa.plugins.util;
-
 /*
  * ====================================================================
  * JAFFA - Java Application Framework For All
@@ -49,88 +48,67 @@ package org.jaffa.plugins.util;
  * ====================================================================
  */
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
 
+import static java.nio.file.FileVisitResult.CONTINUE;
+
 /**
- * Helper class to merge fragments for fragmentmerge maven plugin
+ * A {@link FileVisitor} implementation that scans files and directories.
  */
-public class Fragments {
+public class FileFinder extends SimpleFileVisitor<Path> {
+
+    private final PathMatcher matcher;
+
+    private List<Path> files;
+
+    public List<Path> getFiles() {
+        return files;
+    }
+
+    public void addFile(Path file) {
+        if(files == null){
+            files = new ArrayList<>();
+        }
+        files.add(file);
+    }
 
 
-    /**
-     * General Utility method to merge fragments
-     * @param mergedFile
-     * @param frag
-     * @throws IOException
-     */
-    private static void merge(File mergedFile, Path frag) throws IOException {
-        if(frag!=null && Files.exists(frag)) {
-            //FileUtils.writeStringToFile(mergedFile, FileUtils.readFileToString(frag), true);
-            createFileIfNotExist(mergedFile);
-            Files.write(Paths.get(mergedFile.toURI()), Files.readAllBytes(frag), StandardOpenOption.APPEND);
+
+    public FileFinder(String pattern) {
+        matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+    }
+
+    // Compares the glob pattern against
+    // the file or directory name.
+    void find(Path file) {
+        Path name = file.getFileName();
+        if (name != null && matcher.matches(name)) {
+            addFile(file);
         }
     }
 
-    /**
-     * General Utility method to write tag in the file
-     * @param mergedFile
-     * @param tag
-     * @throws IOException
-     */
-    public static void writeTag(File mergedFile, String tag) throws IOException {
-        if(tag!=null && tag.length() > 0){
-            //FileUtils.writeStringToFile(mergedFile, tag, true);
-            createFileIfNotExist(mergedFile);
-            Files.write(Paths.get(mergedFile.toURI()), tag.getBytes(), StandardOpenOption.APPEND);
-        }
+    // Invoke the pattern matching
+    // method on each file.
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+        find(file);
+        return CONTINUE;
     }
 
-    /**
-     * Utility method to merge fragment resources
-     * @param finalFile
-     * @param fragFiles
-     * @param startTag
-     * @param endTag
-     * @throws IOException
-     */
-    public static void mergeFragmentResources(File finalFile, List<Path> fragFiles, String startTag, String endTag) throws IOException{
-        mergeFragmentResources(finalFile, fragFiles, startTag, endTag, true);
-    }
-    /**
-     * Utility method to merge fragment resources
-     * @param finalFile
-     * @param fragFiles
-     * @param startTag
-     * @param endTag
-     * @throws IOException
-     */
-    public static void mergeFragmentResources(File finalFile, List<Path> fragFiles, String startTag, String endTag, boolean deleteFrags) throws IOException{
-
-        if(fragFiles!=null && fragFiles.size() > 0) {
-            //Write start tag to the final merged file
-            writeTag(finalFile, startTag);
-
-            //Append each fragments
-            for (Path fragFile : fragFiles) {
-                merge(finalFile, fragFile);
-                if(deleteFrags) {
-                    Files.delete(fragFile);
-                }
-            }
-
-            //Write end tag to the final merged file
-            writeTag(finalFile, endTag);
-        }
+    // Invoke the pattern matching
+    // method on each directory.
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+        find(dir);
+        return CONTINUE;
     }
 
-    private static void createFileIfNotExist(File file) throws IOException {
-        if(!Files.exists(Paths.get(file.toURI()))) {
-            Files.createDirectories(Paths.get(file.toURI()).getParent());
-            Files.createFile(Paths.get(file.toURI()));
-        }
-
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        return CONTINUE;
     }
 }
