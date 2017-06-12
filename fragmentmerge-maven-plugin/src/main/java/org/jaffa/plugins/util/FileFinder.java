@@ -1,5 +1,4 @@
 package org.jaffa.plugins.util;
-
 /*
  * ====================================================================
  * JAFFA - Java Application Framework For All
@@ -48,33 +47,68 @@ package org.jaffa.plugins.util;
  * SUCH DAMAGE.
  * ====================================================================
  */
-import java.io.File;
+
 import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.nio.file.FileVisitResult.CONTINUE;
 
 /**
- * Helper class to merge JAWR fragments for fragmentmerge maven plugin
+ * A {@link FileVisitor} implementation that scans files and directories.
  */
-public class JawrResourceFragments extends Fragments {
+public class FileFinder extends SimpleFileVisitor<Path> {
 
+    private final PathMatcher matcher;
 
-    /**
-     * Default Start Tag for JAWR merged file
-     */
-    private static String START_TAG = "#---------------------------\n #Merging Jawr from pfragments START \n#---------------------------\n";
+    private List<Path> files;
 
-    /**
-     * Default End Tag for JAWR merged files
-     */
-    private static String END_TAG = "\n#---------------------------\n #Merging Jawr from pfragments END \n#---------------------------";
-
-    /**
-     * Utility method to merge jawr fragments
-     * @param mergedFile
-     * @param frag
-     * @throws IOException
-     */
-    public static void merge(File mergedFile, File frag) throws IOException {
-        merge(mergedFile, frag, START_TAG, END_TAG);
+    public List<Path> getFiles() {
+        return files;
     }
 
+    public void addFile(Path file) {
+        if(files == null){
+            files = new ArrayList<>();
+        }
+        files.add(file);
+    }
+
+
+
+    public FileFinder(String pattern) {
+        matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+    }
+
+    // Compares the glob pattern against
+    // the file or directory name.
+    void find(Path file) {
+        Path name = file.getFileName();
+        if (name != null && matcher.matches(name)) {
+            addFile(file);
+        }
+    }
+
+    // Invoke the pattern matching
+    // method on each file.
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+        find(file);
+        return CONTINUE;
+    }
+
+    // Invoke the pattern matching
+    // method on each directory.
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+        find(dir);
+        return CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        return CONTINUE;
+    }
 }

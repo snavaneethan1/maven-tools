@@ -48,10 +48,11 @@ package org.jaffa.plugins.util;
  * SUCH DAMAGE.
  * ====================================================================
  */
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.*;
+import java.util.List;
 
 /**
  * Helper class to merge fragments for fragmentmerge maven plugin
@@ -60,22 +61,76 @@ public class Fragments {
 
 
     /**
-     * Base class Utility method to merge fragments
+     * General Utility method to merge fragments
      * @param mergedFile
      * @param frag
+     * @throws IOException
+     */
+    private static void merge(File mergedFile, Path frag) throws IOException {
+        if(frag!=null && Files.exists(frag)) {
+            //FileUtils.writeStringToFile(mergedFile, FileUtils.readFileToString(frag), true);
+            createFileIfNotExist(mergedFile);
+            Files.write(Paths.get(mergedFile.toURI()), Files.readAllBytes(frag), StandardOpenOption.APPEND);
+        }
+    }
+
+    /**
+     * General Utility method to write tag in the file
+     * @param mergedFile
+     * @param tag
+     * @throws IOException
+     */
+    public static void writeTag(File mergedFile, String tag) throws IOException {
+        if(tag!=null && tag.length() > 0){
+            //FileUtils.writeStringToFile(mergedFile, tag, true);
+            createFileIfNotExist(mergedFile);
+            Files.write(Paths.get(mergedFile.toURI()), tag.getBytes(), StandardOpenOption.APPEND);
+        }
+    }
+
+    /**
+     * Utility method to merge fragment resources
+     * @param finalFile
+     * @param fragFiles
      * @param startTag
      * @param endTag
      * @throws IOException
      */
-    public static void merge(File mergedFile, File frag, String startTag, String endTag) throws IOException {
-        if(!mergedFile.exists() && frag!=null){
-            FileUtils.writeStringToFile(mergedFile, startTag, true);
+    public static void mergeFragmentResources(File finalFile, List<Path> fragFiles, String startTag, String endTag) throws IOException{
+        mergeFragmentResources(finalFile, fragFiles, startTag, endTag, true);
+    }
+    /**
+     * Utility method to merge fragment resources
+     * @param finalFile
+     * @param fragFiles
+     * @param startTag
+     * @param endTag
+     * @throws IOException
+     */
+    public static void mergeFragmentResources(File finalFile, List<Path> fragFiles, String startTag, String endTag, boolean deleteFrags) throws IOException{
+
+        if(fragFiles!=null && fragFiles.size() > 0) {
+            //Write start tag to the final merged file
+            writeTag(finalFile, startTag);
+
+            //Append each fragments
+            for (Path fragFile : fragFiles) {
+                merge(finalFile, fragFile);
+                if(deleteFrags) {
+                    Files.delete(fragFile);
+                }
+            }
+
+            //Write end tag to the final merged file
+            writeTag(finalFile, endTag);
         }
-        if(frag == null && mergedFile.exists()){
-            FileUtils.writeStringToFile(mergedFile, endTag, true);
+    }
+
+    private static void createFileIfNotExist(File file) throws IOException {
+        if(!Files.exists(Paths.get(file.toURI()))) {
+            Files.createDirectories(Paths.get(file.toURI()).getParent());
+            Files.createFile(Paths.get(file.toURI()));
         }
-        if(frag!=null) {
-            FileUtils.writeStringToFile(mergedFile, FileUtils.readFileToString(frag), true);
-        }
+
     }
 }
