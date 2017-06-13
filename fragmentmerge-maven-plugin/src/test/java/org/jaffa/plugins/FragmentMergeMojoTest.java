@@ -17,23 +17,23 @@ package org.jaffa.plugins;
  */
 
 import java.io.*;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
-import org.apache.commons.io.FileUtils;
+
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.jaffa.plugins.util.FileFinder;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
+
 
 
 /**
@@ -62,14 +62,24 @@ public class FragmentMergeMojoTest extends AbstractMojoTestCase{
         myMojo.classesDirectory = new File(testProject.getBuild().getTestOutputDirectory());
         assertNotNull(myMojo);
         myMojo.execute();
-        Iterator<File> jarFilesIterator = FileUtils.listFiles(myMojo.targetDirectory, new String[]{"jar",}, false).iterator();
-        while(jarFilesIterator.hasNext()) {
-            File testJar = jarFilesIterator.next();
-            if(testJar.getName().endsWith("-tests.jar")) {
-                assertTrue(isDwrInsideJarExists(testJar));
-                assertTrue(isApplicationResourcesInsideJarExists(testJar));
-            }
-        }
+        FileFinder filesFinder = new FileFinder("*.properties");
+        Path testTarget = new File(myMojo.targetDirectory+File.separator+"test-classes"+File.separator+"META-INF").toPath();
+        Files.walkFileTree(testTarget, filesFinder);
+        List<Path> testResourceFiles = filesFinder.getFiles();
+        assertNotNull(findEntryInJar(testResourceFiles, "ApplicationResources.properties"));
+        assertNotNull(findEntryInJar(testResourceFiles, "ApplicationRules_ABC.properties"));
+
+        filesFinder = new FileFinder("*.xml");
+        Files.walkFileTree(testTarget, filesFinder);
+        testResourceFiles = filesFinder.getFiles();
+
+        assertNotNull(findEntryInJar(testResourceFiles, "dwr.xml"));
+        assertNotNull(findEntryInJar(testResourceFiles, "components.xml"));
+        assertNotNull(findEntryInJar(testResourceFiles, "business-functions.xml"));
+        assertNotNull(findEntryInJar(testResourceFiles, "roles.xml"));
+        assertNotNull(findEntryInJar(testResourceFiles, "struts-config.xml"));
+        assertNotNull(findEntryInJar(testResourceFiles, "navigation.xml"));
+
     }
 
     private MavenProject readMavenProject(File pom) throws Exception {
@@ -80,20 +90,12 @@ public class FragmentMergeMojoTest extends AbstractMojoTestCase{
         return project;
     }
 
-    private  boolean isDwrInsideJarExists(File testJar) throws IOException {
-        JarEntry dwr = null;
-        try(JarFile jarFile = new JarFile(testJar)){
-            dwr = jarFile.getJarEntry("META-INF/dwr.xml");
+    private Path findEntryInJar(List<Path> testResourceFiles, String entry) throws IOException {
+        for(Path testResourceFile : testResourceFiles){
+            if(testResourceFile.getFileName().toString().equals(entry))
+                return testResourceFile;
         }
-        return dwr!=null ? true : false;
-    }
-
-    private  boolean isApplicationResourcesInsideJarExists(File testJar) throws IOException {
-        JarEntry dwr = null;
-        try(JarFile jarFile = new JarFile(testJar)){
-            dwr = jarFile.getJarEntry("META-INF/ApplicationResources.properties");
-        }
-        return dwr!=null ? true : false;
+        return null;
     }
 }
 

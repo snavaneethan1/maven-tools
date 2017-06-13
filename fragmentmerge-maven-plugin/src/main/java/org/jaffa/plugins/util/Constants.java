@@ -197,17 +197,26 @@ public class Constants {
     //xfragment
     public static final String XFRAGMENT = "xfragment";
 
+    //xml
+    public static final String XML = "xml";
+
+    //properties
+    public static final String PROPERTIES = "properties";
+
     //ApplicationResources
     public static final String APPLICATION_RESOURCES = "ApplicationResources";
 
     //ApplicationResources
-    public static final String APPLICATION_RULES = "ApplicationRules";
+    public static final String APPLICATION_RULES = "ApplicationRules_";
 
     //Business Functions
     public static final String BUSINESS_FUNCTIONS = "business-functions";
 
     //Roles
     public static final String ROLES = "roles";
+
+    //Navigation
+    public static final String NAVIGATION = "navigation";
 
     //Dwr
     public static final String DWR = "dwr";

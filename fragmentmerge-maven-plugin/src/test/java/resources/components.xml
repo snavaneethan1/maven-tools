@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <component id="abc.testmod.testcomp">
+       <class>abc/testmod/testclass/test.jsp</class>
+       <type>abc</type>
+       <mandatory-function name="abc.testmod.testmand"/>
+       <optional-function name="abc.testmod.testopt"/>
+    </component>
+
