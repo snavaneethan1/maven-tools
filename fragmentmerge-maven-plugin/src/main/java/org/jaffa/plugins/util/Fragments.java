@@ -71,6 +71,8 @@ public class Fragments {
             //FileUtils.writeStringToFile(mergedFile, FileUtils.readFileToString(frag), true);
             createFileIfNotExist(mergedFile);
             Files.write(Paths.get(mergedFile.toURI()), Files.readAllBytes(frag), StandardOpenOption.APPEND);
+            //Append new line after each fragment
+            Files.write(Paths.get(mergedFile.toURI()), "\n".getBytes(), StandardOpenOption.APPEND);
         }
     }
 
