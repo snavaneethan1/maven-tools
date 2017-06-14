@@ -89,6 +89,16 @@ public class Fragments {
     }
 
     /**
+     * Utility method to merge fragment resources without start and end tag
+     * @param finalFile
+     * @param fragFiles
+     * @throws IOException
+     */
+    public static void mergeFragmentResourcesWithNoTags(File finalFile, List<Path> fragFiles) throws IOException{
+        mergeFragmentResources(finalFile, fragFiles, "", "", true);
+    }
+
+    /**
      * Utility method to merge fragment resources
      * @param finalFile
      * @param fragFiles
