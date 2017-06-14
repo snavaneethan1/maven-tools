@@ -240,7 +240,7 @@ public class FragmentMergeMojo extends AbstractMojo{
         FileFinder dwrResourcesFinder = new FileFinder(DWR+"*."+XFRAGMENT);
         Files.walkFileTree(targetDirectory.toPath(), dwrResourcesFinder);
         List<Path> dwrResourceFragFiles = dwrResourcesFinder.getFiles();
-        mergeFragmentResources(dwr, dwrResourceFragFiles, DWR_START_TAG, DWR_END_TAG, getSkipTagForConfigFilesList().contains(DWR));
+        mergeFragmentResources(dwr, dwrResourceFragFiles, DWR_START_TAG, DWR_END_TAG, getSkipTagForConfigFilesList().contains(DWR), true);
         getLog().debug("End of ApplicationResources Merge Process");
     }
 
@@ -251,7 +251,7 @@ public class FragmentMergeMojo extends AbstractMojo{
         if(htmlDirectory!=null) {
             Files.walkFileTree(htmlDirectory, jawrResourceFinder);
             List<Path> jawrResourceFragFiles = jawrResourceFinder.getFiles();
-            mergeFragmentResources(jawr, jawrResourceFragFiles, JAWR_START_TAG, JAWR_END_TAG, false);
+            mergeFragmentResources(jawr, jawrResourceFragFiles, JAWR_START_TAG, JAWR_END_TAG, false, false);
         }
         getLog().debug("End of ApplicationResources Merge Process");
     }
@@ -370,14 +370,14 @@ public class FragmentMergeMojo extends AbstractMojo{
     }
 
     private void mergeFragmentResources(File mergedFile, List<Path> fragments, String startTag, String endTag) throws IOException {
-        mergeFragmentResources(mergedFile, fragments, startTag, endTag, false);
+        mergeFragmentResources(mergedFile, fragments, startTag, endTag, false, true);
     }
 
-    private void mergeFragmentResources(File mergedFile, List<Path> fragments, String startTag, String endTag, Boolean skipTags) throws IOException {
+    private void mergeFragmentResources(File mergedFile, List<Path> fragments, String startTag, String endTag, Boolean skipTags, Boolean deleteFrags) throws IOException {
         if(skipTags!=null && Boolean.TRUE.equals(skipTags)){
-            Fragments.mergeFragmentResourcesWithNoTags(mergedFile, fragments);
+            Fragments.mergeFragmentResourcesWithNoTags(mergedFile, fragments, deleteFrags);
         }else{
-            Fragments.mergeFragmentResources(mergedFile, fragments, startTag, endTag);
+            Fragments.mergeFragmentResources(mergedFile, fragments, startTag, endTag, deleteFrags);
         }
     }
 }

@@ -96,8 +96,8 @@ public class Fragments {
      * @param fragFiles
      * @throws IOException
      */
-    public static void mergeFragmentResourcesWithNoTags(File finalFile, List<Path> fragFiles) throws IOException{
-        mergeFragmentResources(finalFile, fragFiles, "", "", true);
+    public static void mergeFragmentResourcesWithNoTags(File finalFile, List<Path> fragFiles, boolean deleteFrags) throws IOException{
+        mergeFragmentResources(finalFile, fragFiles, "", "", deleteFrags);
     }
 
     /**
