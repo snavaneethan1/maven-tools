@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE global-menu PUBLIC "-//JAFFA//DTD Menu Navigation 1.0//EN" "http://jaffa.sourceforge.net/DTD/navigation_1_0.dtd">
+<global-menu>
+    <menu-option>
+        <label>[label.MainMenu.Home]</label>
+        <desktop-menu>
+            <label>[label.MainMenu.Home.General]</label>
+            <struts-tile-template>global.desktop</struts-tile-template>
+            <home-page>homepage1.jsp</home-page>
+            <menu-option>
+                <label>[label.MainMenu.Home.General]</label>
+            </menu-option>
+        </desktop-menu>
+    </menu-option>
+</global-menu>

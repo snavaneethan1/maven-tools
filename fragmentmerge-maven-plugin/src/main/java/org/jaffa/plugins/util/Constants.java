@@ -191,23 +191,42 @@ public class Constants {
     //components file name inside jar
     public static final String COMPONENTS_FILE = "components.xml";
 
+    //Struts-Config
+    public static final String STRUTS_CONFIG = "struts-config";
+
+    //components
+    public static final String COMPONENTS = "components";
+
     //pfragment
     public static final String PFRAGMENT = "pfragment";
 
     //xfragment
     public static final String XFRAGMENT = "xfragment";
 
+    //xml
+    public static final String XML = "xml";
+
+    //properties
+    public static final String PROPERTIES = "properties";
+
     //ApplicationResources
     public static final String APPLICATION_RESOURCES = "ApplicationResources";
 
-    //ApplicationResources
+    //ApplicationRules
+    public static final String APPLICATION_RULES_ = "ApplicationRules_";
+
+    //ApplicationRules
     public static final String APPLICATION_RULES = "ApplicationRules";
+
 
     //Business Functions
     public static final String BUSINESS_FUNCTIONS = "business-functions";
 
     //Roles
     public static final String ROLES = "roles";
+
+    //Navigation
+    public static final String NAVIGATION = "navigation";
 
     //Dwr
     public static final String DWR = "dwr";

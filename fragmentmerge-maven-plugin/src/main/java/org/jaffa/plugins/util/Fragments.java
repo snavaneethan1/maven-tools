@@ -71,6 +71,8 @@ public class Fragments {
             //FileUtils.writeStringToFile(mergedFile, FileUtils.readFileToString(frag), true);
             createFileIfNotExist(mergedFile);
             Files.write(Paths.get(mergedFile.toURI()), Files.readAllBytes(frag), StandardOpenOption.APPEND);
+            //Append new line after each fragment
+            Files.write(Paths.get(mergedFile.toURI()), "\n".getBytes(), StandardOpenOption.APPEND);
         }
     }
 
@@ -86,6 +88,16 @@ public class Fragments {
             createFileIfNotExist(mergedFile);
             Files.write(Paths.get(mergedFile.toURI()), tag.getBytes(), StandardOpenOption.APPEND);
         }
+    }
+
+    /**
+     * Utility method to merge fragment resources without start and end tag
+     * @param finalFile
+     * @param fragFiles
+     * @throws IOException
+     */
+    public static void mergeFragmentResourcesWithNoTags(File finalFile, List<Path> fragFiles, boolean deleteFrags) throws IOException{
+        mergeFragmentResources(finalFile, fragFiles, "", "", deleteFrags);
     }
 
     /**

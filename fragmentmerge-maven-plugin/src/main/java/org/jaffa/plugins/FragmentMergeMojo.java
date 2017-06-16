@@ -54,6 +54,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -104,7 +105,35 @@ public class FragmentMergeMojo extends AbstractMojo{
      */
     File targetDirectory;
 
+    /**
+     * Skip Tags For configuration files
+     */
+    @Parameter
+    String[] skipTagForConfigFiles;
 
+    /**
+     * Skip Listed configuration files
+     */
+    @Parameter
+    String[] skipConfigFiles;
+
+
+    /**
+     * Getter for skipTagForConfigFiles parameter
+     * @return
+     */
+    public List<String> getSkipTagForConfigFilesList(){
+        return skipTagForConfigFiles !=null ? Arrays.asList(skipTagForConfigFiles) : new ArrayList<String>();
+    }
+
+
+    /**
+     * Getter for skipConfigFiles parameter
+     * @return
+     */
+    public List<String> getSkipConfigFilesList(){
+        return skipConfigFiles !=null ? Arrays.asList(skipConfigFiles) : new ArrayList<String>();
+    }
 
     /**
      * Execute method for Fragment Merging
@@ -128,40 +157,67 @@ public class FragmentMergeMojo extends AbstractMojo{
             if (targetDirectory.exists()) {
 
                 //Merging ApplicationResourceFragments
-                mergeApplicationResources(applicationResources);
-
-                //Merging Dwr Resource Fragments
-                mergeDwrResources(dwr);
-
-                //Merging jawr Resource Fragments
-                mergeJawrResources(jawr);
-
-                //Start Merging Struts-Config
-                boolean strutsConfigFragsFound = false;
-                Fragments.writeTag(strutsConfig, STRUTS_CONFIG_START_TAG);
-                //Merging StrutsFormBean
-                strutsConfigFragsFound = mergeStrutsFormResources(strutsConfig);
-
-                //Merging StrutsGlobalForward
-                strutsConfigFragsFound |= mergeStrutsGlobalForwardResources(strutsConfig);
-
-                //Merging StrutsConfigAction
-                strutsConfigFragsFound |= mergeStrutsConfigActionResources(strutsConfig);
-
-                //End Merging Struts-Config
-                Fragments.writeTag(strutsConfig, STRUTS_CONFIG_END_TAG);
-                if(!strutsConfigFragsFound){
-                    strutsConfig.delete();
+                if(!getSkipConfigFilesList().contains(APPLICATION_RESOURCES)) {
+                    mergeApplicationResources(applicationResources);
                 }
 
-                //Merging tiles-def
-                mergeTileDefsResources(tilesDef);
+                //Merging Dwr Resource Fragments
+                if(!getSkipConfigFilesList().contains(DWR)) {
+                    mergeDwrResources(dwr);
+                }
 
-                //Merging componentDefinitions
-                mergeComponentsResources(components);
+                //Merging jawr Resource Fragments
+                if(!getSkipConfigFilesList().contains(JAWR)) {
+                    mergeJawrResources(jawr);
+                }
 
-                //Merge ApplicationRules
-                mergeApplicationRules();
+                //Start Merging Struts-Config
+                if(!getSkipConfigFilesList().contains(STRUTS_CONFIG)) {
+                    boolean strutsConfigFragsFound = false;
+                    Fragments.writeTag(strutsConfig, STRUTS_CONFIG_START_TAG);
+                    //Merging StrutsFormBean
+                    strutsConfigFragsFound = mergeStrutsFormResources(strutsConfig);
+
+                    //Merging StrutsGlobalForward
+                    strutsConfigFragsFound |= mergeStrutsGlobalForwardResources(strutsConfig);
+
+                    //Merging StrutsConfigAction
+                    strutsConfigFragsFound |= mergeStrutsConfigActionResources(strutsConfig);
+
+                    //End Merging Struts-Config
+                    Fragments.writeTag(strutsConfig, STRUTS_CONFIG_END_TAG);
+
+                    if(!strutsConfigFragsFound){
+                        strutsConfig.delete();
+                    }
+                    //Merging tiles-def
+                    mergeTileDefsResources(tilesDef);
+                }
+
+                if(!getSkipConfigFilesList().contains(COMPONENTS)) {
+                    //Merging componentDefinitions
+                    mergeComponentsResources(components);
+                }
+
+                if(!getSkipConfigFilesList().contains(APPLICATION_RULES)) {
+                    //Merge ApplicationRules
+                    mergeApplicationRules();
+                }
+
+                if(!getSkipConfigFilesList().contains(BUSINESS_FUNCTIONS)) {
+                    //Merge business-functions
+                    mergeBusinessFunctions();
+                }
+
+                if(!getSkipConfigFilesList().contains(ROLES)) {
+                    //Merge roles
+                    mergeRoles();
+                }
+
+                if(!getSkipConfigFilesList().contains(NAVIGATION)) {
+                    //Merge Navigation
+                    mergeNavigation();
+                }
             }
         }catch(IOException io){
             getLog().error(io);
@@ -172,86 +228,86 @@ public class FragmentMergeMojo extends AbstractMojo{
 
     private void mergeApplicationResources(File applicationResources) throws IOException {
         getLog().debug("Starting ApplicationResources Merge Process");
-        FileFinder appResourcesFinder = new FileFinder(APPLICATION_RESOURCES+"*."+PFRAGMENT);
+        FileFinder appResourcesFinder = new FileFinder("*"+APPLICATION_RESOURCES+"*."+PFRAGMENT);
         Files.walkFileTree(targetDirectory.toPath(), appResourcesFinder);
         List<Path> applicationResourceFragFiles = appResourcesFinder.getFiles();
-        Fragments.mergeFragmentResources(applicationResources, applicationResourceFragFiles, APP_RESOURCES_START_TAG, APP_RESOURCES_END_TAG);
+        mergeFragmentResources(applicationResources, applicationResourceFragFiles, APP_RESOURCES_START_TAG, APP_RESOURCES_END_TAG);
         getLog().debug("End of ApplicationResources Merge Process");
     }
 
     private void mergeDwrResources(File dwr) throws IOException {
         getLog().debug("Starting ApplicationResources Merge Process");
-        FileFinder dwrResourcesFinder = new FileFinder((DWR+"*."+XFRAGMENT));
+        FileFinder dwrResourcesFinder = new FileFinder(DWR+"*."+XFRAGMENT);
         Files.walkFileTree(targetDirectory.toPath(), dwrResourcesFinder);
         List<Path> dwrResourceFragFiles = dwrResourcesFinder.getFiles();
-        Fragments.mergeFragmentResources(dwr, dwrResourceFragFiles, DWR_START_TAG, DWR_END_TAG);
+        mergeFragmentResources(dwr, dwrResourceFragFiles, DWR_START_TAG, DWR_END_TAG, getSkipTagForConfigFilesList().contains(DWR), true);
         getLog().debug("End of ApplicationResources Merge Process");
     }
 
     private void mergeJawrResources(File jawr) throws IOException {
         getLog().debug("Starting ApplicationResources Merge Process");
-        FileFinder jawrResourceFinder = new FileFinder((JAWR+"*."+PFRAGMENT));
+        FileFinder jawrResourceFinder = new FileFinder(JAWR+"*."+PFRAGMENT);
         Path htmlDirectory = sourceDirectory!=null ? Paths.get(sourceDirectory.getParent() + File.separator + "html") : null;
         if(htmlDirectory!=null) {
             Files.walkFileTree(htmlDirectory, jawrResourceFinder);
             List<Path> jawrResourceFragFiles = jawrResourceFinder.getFiles();
-            Fragments.mergeFragmentResources(jawr, jawrResourceFragFiles, JAWR_START_TAG, JAWR_END_TAG, false);
+            mergeFragmentResources(jawr, jawrResourceFragFiles, JAWR_START_TAG, JAWR_END_TAG, false, false);
         }
         getLog().debug("End of ApplicationResources Merge Process");
     }
 
     private boolean mergeStrutsFormResources(File strutsConfig) throws IOException {
         getLog().debug("Starting StrutsFormResources Merge Process");
-        FileFinder strutsConfigFormBeanResourceFinder = new FileFinder((STRUTS_CONFIG_FORM_BEAN+"*."+XFRAGMENT));
+        FileFinder strutsConfigFormBeanResourceFinder = new FileFinder(STRUTS_CONFIG_FORM_BEAN+"*."+XFRAGMENT);
         Files.walkFileTree(targetDirectory.toPath(), strutsConfigFormBeanResourceFinder);
         List<Path> strutsConfigFormBeanResourceFragFiles = strutsConfigFormBeanResourceFinder.getFiles();
-        Fragments.mergeFragmentResources(strutsConfig, strutsConfigFormBeanResourceFragFiles, STRUTS_FORM_START_TAG, STRUTS_FORM_END_TAG);
+        mergeFragmentResources(strutsConfig, strutsConfigFormBeanResourceFragFiles, STRUTS_FORM_START_TAG, STRUTS_FORM_END_TAG);
         getLog().debug("End of StrutsFormResources Merge Process");
         return strutsConfigFormBeanResourceFragFiles!=null && strutsConfigFormBeanResourceFragFiles.size() > 0;
     }
 
     private boolean mergeStrutsGlobalForwardResources(File strutsConfig) throws IOException {
         getLog().debug("Starting StrutsGlobalForward Merge Process");
-        FileFinder strutsConfigGlobalForwardResourceFinder = new FileFinder((STRUTS_CONFIG_GLOBAL_FORWARD+"*."+XFRAGMENT));
+        FileFinder strutsConfigGlobalForwardResourceFinder = new FileFinder(STRUTS_CONFIG_GLOBAL_FORWARD+"*."+XFRAGMENT);
         Files.walkFileTree(targetDirectory.toPath(), strutsConfigGlobalForwardResourceFinder);
         List<Path> strutsConfigGlobalForwardResourceFragFiles = strutsConfigGlobalForwardResourceFinder.getFiles();
-        Fragments.mergeFragmentResources(strutsConfig, strutsConfigGlobalForwardResourceFragFiles, STRUTS_GLOBAL_FWD_START_TAG, STRUTS_GLOBAL_FWD_END_TAG);
+        mergeFragmentResources(strutsConfig, strutsConfigGlobalForwardResourceFragFiles, STRUTS_GLOBAL_FWD_START_TAG, STRUTS_GLOBAL_FWD_END_TAG);
         getLog().debug("End of StrutsGlobalForward Merge Process");
         return strutsConfigGlobalForwardResourceFragFiles!=null && strutsConfigGlobalForwardResourceFragFiles.size() > 0;
     }
 
     private boolean mergeStrutsConfigActionResources(File strutsConfig) throws IOException {
         getLog().debug("Starting StrutsConfig Merge Process");
-        FileFinder strutsConfigActionResourceResourceFinder = new FileFinder((STRUTS_CONFIG_ACTION+"*."+XFRAGMENT));
+        FileFinder strutsConfigActionResourceResourceFinder = new FileFinder(STRUTS_CONFIG_ACTION+"*."+XFRAGMENT);
         Files.walkFileTree(targetDirectory.toPath(), strutsConfigActionResourceResourceFinder);
         List<Path> strutsConfigActionResourceFragFiles = strutsConfigActionResourceResourceFinder.getFiles();
-        Fragments.mergeFragmentResources(strutsConfig, strutsConfigActionResourceFragFiles, STRUTS_ACTION_START_TAG, STRUTS_ACTION_END_TAG);
+        mergeFragmentResources(strutsConfig, strutsConfigActionResourceFragFiles, STRUTS_ACTION_START_TAG, STRUTS_ACTION_END_TAG);
         getLog().debug("End of StrutsConfig Merge Process");
         return strutsConfigActionResourceFragFiles!=null && strutsConfigActionResourceFragFiles.size() > 0;
     }
 
     private void mergeTileDefsResources(File tilesDef) throws IOException {
         getLog().debug("Starting TilesDef Merge Process");
-        FileFinder componentTilesDefinitionsResourceFinder = new FileFinder((TILE_DEFS+"*."+XFRAGMENT));
+        FileFinder componentTilesDefinitionsResourceFinder = new FileFinder(TILE_DEFS+"*."+XFRAGMENT);
         Files.walkFileTree(targetDirectory.toPath(), componentTilesDefinitionsResourceFinder);
         List<Path> componentTilesDefinitionsResourceFragFiles = componentTilesDefinitionsResourceFinder.getFiles();
-        Fragments.mergeFragmentResources(tilesDef, componentTilesDefinitionsResourceFragFiles, STRUTS_TILE_DEFS_START_TAG, STRUTS_TILE_DEFS_END_TAG);
+        mergeFragmentResources(tilesDef, componentTilesDefinitionsResourceFragFiles, STRUTS_TILE_DEFS_START_TAG, STRUTS_TILE_DEFS_END_TAG);
         getLog().debug("End of TilesDef Merge Process");
     }
 
     private void mergeComponentsResources(File components) throws IOException {
         getLog().debug("Starting Components Merge Process");
-        FileFinder componentDefinitionsResourceFinder = new FileFinder((COMPONENT_DEFINITIONS+"*."+XFRAGMENT));
+        FileFinder componentDefinitionsResourceFinder = new FileFinder(COMPONENT_DEFINITIONS+"*."+XFRAGMENT);
         Files.walkFileTree(targetDirectory.toPath(), componentDefinitionsResourceFinder);
         List<Path> componentTilesDefinitionsResourceFragFiles = componentDefinitionsResourceFinder.getFiles();
-        Fragments.mergeFragmentResources(components, componentTilesDefinitionsResourceFragFiles, COMPONENTS_START_TAG, COMPONENTS_END_TAG);
+        mergeFragmentResources(components, componentTilesDefinitionsResourceFragFiles, COMPONENTS_START_TAG, COMPONENTS_END_TAG);
         getLog().debug("End of Components Merge Process");
     }
 
 
     private void mergeApplicationRules() throws IOException {
         getLog().debug("Starting ApplicationRules Merge Process");
-        FileFinder applicationRulesResourceFinder = new FileFinder((APPLICATION_RULES+"*.*"));
+        FileFinder applicationRulesResourceFinder = new FileFinder(APPLICATION_RULES_ +"*."+PROPERTIES);
         Files.walkFileTree(targetDirectory.toPath(), applicationRulesResourceFinder);
         List<Path> applicationRulesFiles = applicationRulesResourceFinder.getFiles();
         if(applicationRulesFiles!=null && applicationRulesFiles.size() > 0) {
@@ -259,7 +315,7 @@ public class FragmentMergeMojo extends AbstractMojo{
                 File mergedApplicationRule = new File(classesDirectory + META_INF_LOCATION + applicationRulesFile.getFileName());
                 List<Path> applicationRuleFilesList = new ArrayList<>();
                 applicationRuleFilesList.add(applicationRulesFile);
-                Fragments.mergeFragmentResources(mergedApplicationRule, applicationRuleFilesList, EMPTY_START_TAG, EMPTY_END_TAG);
+                mergeFragmentResources(mergedApplicationRule, applicationRuleFilesList, EMPTY_START_TAG, EMPTY_END_TAG);
             }
         }
         getLog().debug("End of ApplicationResources Merge Process");
@@ -267,15 +323,15 @@ public class FragmentMergeMojo extends AbstractMojo{
 
     private void mergeBusinessFunctions() throws IOException {
         getLog().debug("Starting Business Functions Merge Process");
-        FileFinder applicationRulesResourceFinder = new FileFinder((BUSINESS_FUNCTIONS+"*.*"));
-        Files.walkFileTree(targetDirectory.toPath(), applicationRulesResourceFinder);
-        List<Path> applicationRulesFiles = applicationRulesResourceFinder.getFiles();
-        if(applicationRulesFiles!=null && applicationRulesFiles.size() > 0) {
-            for (Path applicationRulesFile : applicationRulesFiles) {
-                File mergedApplicationRule = new File(classesDirectory + META_INF_LOCATION + applicationRulesFile.getFileName());
-                List<Path> applicationRuleFilesList = new ArrayList<>();
-                applicationRuleFilesList.add(applicationRulesFile);
-                Fragments.mergeFragmentResources(mergedApplicationRule, applicationRuleFilesList, EMPTY_START_TAG, EMPTY_END_TAG);
+        FileFinder businessFunctionResourceFinder = new FileFinder(BUSINESS_FUNCTIONS+"*."+XML);
+        Files.walkFileTree(targetDirectory.toPath(), businessFunctionResourceFinder);
+        List<Path> businessFunctionFiles = businessFunctionResourceFinder.getFiles();
+        if(businessFunctionFiles!=null && businessFunctionFiles.size() > 0) {
+            for (Path businessFunctionFile : businessFunctionFiles) {
+                File mergedBusinessFunctionFile = new File(classesDirectory + META_INF_LOCATION + businessFunctionFile.getFileName());
+                List<Path> businessFunctionFilesList = new ArrayList<>();
+                businessFunctionFilesList.add(businessFunctionFile);
+                mergeFragmentResources(mergedBusinessFunctionFile, businessFunctionFilesList, EMPTY_START_TAG, EMPTY_END_TAG);
             }
         }
         getLog().debug("End of Business Functions Merge Process");
@@ -283,18 +339,46 @@ public class FragmentMergeMojo extends AbstractMojo{
 
     private void mergeRoles() throws IOException {
         getLog().debug("Starting Roles Merge Process");
-        FileFinder applicationRulesResourceFinder = new FileFinder((ROLES+"*.*"));
-        Files.walkFileTree(targetDirectory.toPath(), applicationRulesResourceFinder);
-        List<Path> applicationRulesFiles = applicationRulesResourceFinder.getFiles();
-        if(applicationRulesFiles!=null && applicationRulesFiles.size() > 0) {
-            for (Path applicationRulesFile : applicationRulesFiles) {
-                File mergedApplicationRule = new File(classesDirectory + META_INF_LOCATION + applicationRulesFile.getFileName());
-                List<Path> applicationRuleFilesList = new ArrayList<>();
-                applicationRuleFilesList.add(applicationRulesFile);
-                Fragments.mergeFragmentResources(mergedApplicationRule, applicationRuleFilesList, EMPTY_START_TAG, EMPTY_END_TAG);
+        FileFinder rolesResourceFinder = new FileFinder(ROLES+"*."+XML);
+        Files.walkFileTree(targetDirectory.toPath(), rolesResourceFinder);
+        List<Path> rolesFiles = rolesResourceFinder.getFiles();
+        if(rolesFiles!=null && rolesFiles.size() > 0) {
+            for (Path rolesFile : rolesFiles) {
+                File mergedRoles = new File(classesDirectory + META_INF_LOCATION + rolesFile.getFileName());
+                List<Path> rolesFilesList = new ArrayList<>();
+                rolesFilesList.add(rolesFile);
+                mergeFragmentResources(mergedRoles, rolesFilesList, EMPTY_START_TAG, EMPTY_END_TAG);
             }
         }
         getLog().debug("End of Roles Merge Process");
+    }
+
+    private void mergeNavigation() throws IOException {
+        getLog().debug("Starting Navigation Merge Process");
+        FileFinder navigationResourceFinder = new FileFinder(NAVIGATION+"*."+XML);
+        Files.walkFileTree(targetDirectory.toPath(), navigationResourceFinder);
+        List<Path> navigationFiles = navigationResourceFinder.getFiles();
+        if(navigationFiles!=null && navigationFiles.size() > 0) {
+            for (Path navigationFile : navigationFiles) {
+                File mergedNavigation = new File(classesDirectory + META_INF_LOCATION + navigationFile.getFileName());
+                List<Path> navigationFilesList = new ArrayList<>();
+                navigationFilesList.add(navigationFile);
+                mergeFragmentResources(mergedNavigation, navigationFilesList, EMPTY_START_TAG, EMPTY_END_TAG);
+            }
+        }
+        getLog().debug("End of Navigation Merge Process");
+    }
+
+    private void mergeFragmentResources(File mergedFile, List<Path> fragments, String startTag, String endTag) throws IOException {
+        mergeFragmentResources(mergedFile, fragments, startTag, endTag, false, true);
+    }
+
+    private void mergeFragmentResources(File mergedFile, List<Path> fragments, String startTag, String endTag, Boolean skipTags, Boolean deleteFrags) throws IOException {
+        if(skipTags!=null && Boolean.TRUE.equals(skipTags)){
+            Fragments.mergeFragmentResourcesWithNoTags(mergedFile, fragments, deleteFrags);
+        }else{
+            Fragments.mergeFragmentResources(mergedFile, fragments, startTag, endTag, deleteFrags);
+        }
     }
 }
 
