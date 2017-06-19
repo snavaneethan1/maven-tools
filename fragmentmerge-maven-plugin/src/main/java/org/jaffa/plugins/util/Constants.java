@@ -249,4 +249,7 @@ public class Constants {
     //ComponentTilesDefinitions
     public static final String COMPONENT_DEFINITIONS = "ComponentDefinition";
 
+    //Resources Folder
+    public static final String RESOURCES = "resources";
+
 }

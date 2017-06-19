@@ -50,9 +50,7 @@ package org.jaffa.plugins;
  */
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -157,17 +155,17 @@ public class FragmentMergeMojo extends AbstractMojo{
             if (targetDirectory.exists()) {
 
                 //Merging ApplicationResourceFragments
-                if(!getSkipConfigFilesList().contains(APPLICATION_RESOURCES)) {
+                if(!getSkipConfigFilesList().contains(APPLICATION_RESOURCES) && !moveResourceFileIfExist(APPLICATION_RESOURCES+"."+PROPERTIES)) {
                     mergeApplicationResources(applicationResources);
                 }
 
                 //Merging Dwr Resource Fragments
-                if(!getSkipConfigFilesList().contains(DWR)) {
+                if(!getSkipConfigFilesList().contains(DWR) && !moveResourceFileIfExist(DWR_FILE)) {
                     mergeDwrResources(dwr);
                 }
 
                 //Merging jawr Resource Fragments
-                if(!getSkipConfigFilesList().contains(JAWR)) {
+                if(!getSkipConfigFilesList().contains(JAWR) && !moveResourceFileIfExist(JAWR_FILE)) {
                     mergeJawrResources(jawr);
                 }
 
@@ -194,7 +192,7 @@ public class FragmentMergeMojo extends AbstractMojo{
                     mergeTileDefsResources(tilesDef);
                 }
 
-                if(!getSkipConfigFilesList().contains(COMPONENTS)) {
+                if(!getSkipConfigFilesList().contains(COMPONENTS) && !moveResourceFileIfExist(COMPONENTS_FILE)) {
                     //Merging componentDefinitions
                     mergeComponentsResources(components);
                 }
@@ -228,6 +226,7 @@ public class FragmentMergeMojo extends AbstractMojo{
 
     private void mergeApplicationResources(File applicationResources) throws IOException {
         getLog().debug("Starting ApplicationResources Merge Process");
+
         FileFinder appResourcesFinder = new FileFinder("*"+APPLICATION_RESOURCES+"*."+PFRAGMENT);
         Files.walkFileTree(targetDirectory.toPath(), appResourcesFinder);
         List<Path> applicationResourceFragFiles = appResourcesFinder.getFiles();
@@ -379,6 +378,15 @@ public class FragmentMergeMojo extends AbstractMojo{
         }else{
             Fragments.mergeFragmentResources(mergedFile, fragments, startTag, endTag, deleteFrags);
         }
+    }
+
+    private boolean moveResourceFileIfExist(String mergedFileName) throws IOException {
+        Path resourceFile = Paths.get(classesDirectory+File.separator+RESOURCES, mergedFileName);
+        boolean resourceFileExist = Files.exists(resourceFile);
+        if(resourceFileExist){
+            Files.move(resourceFile, Paths.get(classesDirectory+META_INF_LOCATION+mergedFileName), StandardCopyOption.ATOMIC_MOVE);
+        }
+        return resourceFileExist;
     }
 }
 
