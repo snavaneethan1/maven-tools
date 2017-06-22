@@ -52,21 +52,46 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
+
+import static org.jaffa.plugins.util.Constants.*;
+
 
 /**
  * A {@link FileVisitor} implementation that scans files and directories.
  */
 public class FileFinder extends SimpleFileVisitor<Path> {
 
-    private final PathMatcher matcher;
+    private PathMatcher matcher;
+
+    /** singleton instances List of FileFinders **/
+    private static volatile Map<Path, FileFinder> fileFinders = new HashMap<>();
+
 
     private List<Path> files;
 
-    public List<Path> getFiles() {
-        return files;
+
+    /**
+     * Method to return Files based on the pattern
+     * @param pattern
+     * @return
+     */
+    public List<Path> getFilteredFiles(String pattern) {
+        List<Path> filteredFiles = new ArrayList<>();
+        if(files!=null && files.size() > 0){
+            for(Path file : files){
+                Path name = file.getFileName();
+                PathMatcher filteredFileMatcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+                if(name!=null && filteredFileMatcher.matches(name)){
+                    filteredFiles.add(file);
+                }
+            }
+        }
+        return filteredFiles;
     }
 
     public void addFile(Path file) {
@@ -76,15 +101,36 @@ public class FileFinder extends SimpleFileVisitor<Path> {
         files.add(file);
     }
 
+    private FileFinder(){
+        super();
+    }
 
+    /**
+     * Creates an instance of FileFinder, if not already instantiated.
+     * @return An instance of the FileFinder.
+     */
+    public static FileFinder getInstance(Path directory) throws IOException {
+        if(!fileFinders.containsKey(directory)){
+            createFileFinder(directory);
+        }
+        return fileFinders.get(directory);
+    }
 
-    public FileFinder(String pattern) {
+    private static synchronized void createFileFinder(Path directory) throws IOException {
+        if(!fileFinders.containsKey(directory)){
+            FileFinder fileFinder = new FileFinder("*.{"+PFRAGMENT+","+XFRAGMENT+","+PROPERTIES+","+XML+"}");
+            fileFinders.put(directory, fileFinder);
+            Files.walkFileTree(directory, fileFinder);
+        }
+    }
+
+    private FileFinder(String pattern) {
         matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
     }
 
     // Compares the glob pattern against
     // the file or directory name.
-    void find(Path file) {
+    private void find(Path file) {
         Path name = file.getFileName();
         if (name != null && matcher.matches(name)) {
             addFile(file);
