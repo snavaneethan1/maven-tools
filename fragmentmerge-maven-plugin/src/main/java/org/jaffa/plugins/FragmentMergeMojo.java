@@ -175,7 +175,7 @@ public class FragmentMergeMojo extends AbstractMojo{
                 }
 
                 //Start Merging Struts-Config
-                if(!getSkipConfigFilesList().contains(STRUTS_CONFIG)) {
+                if(!getSkipConfigFilesList().contains(STRUTS_CONFIG) && !moveResourceFileIfExist(STRUTS_CONFIG_FILE)) {
                     boolean strutsConfigFragsFound = false;
                     Fragments.writeTag(strutsConfig, STRUTS_CONFIG_START_TAG);
                     //Merging StrutsFormBean
@@ -193,7 +193,10 @@ public class FragmentMergeMojo extends AbstractMojo{
                     if(!strutsConfigFragsFound){
                         strutsConfig.delete();
                     }
-                    //Merging tiles-def
+                }
+
+                //Merging tiles-def
+                if(!moveResourceFileIfExist(TILE_DEFS_FILE)) {
                     mergeTileDefsResources(tilesDef);
                 }
 
@@ -362,9 +365,13 @@ public class FragmentMergeMojo extends AbstractMojo{
 
     private boolean moveResourceFileIfExist(String mergedFileName) throws IOException {
         Path resourceFile = Paths.get(classesDirectory+File.separator+RESOURCES, mergedFileName);
+        Path mergedResourceFile = Paths.get(classesDirectory+META_INF_LOCATION+mergedFileName);
         boolean resourceFileExist = Files.exists(resourceFile);
         if(resourceFileExist){
-            Files.move(resourceFile, Paths.get(classesDirectory+META_INF_LOCATION+mergedFileName), StandardCopyOption.ATOMIC_MOVE);
+            if(!Files.exists(mergedResourceFile.getParent())){
+                mergedResourceFile.getParent().toFile().mkdirs();
+            }
+            Files.move(resourceFile, mergedResourceFile, StandardCopyOption.ATOMIC_MOVE);
         }
         return resourceFileExist;
     }
