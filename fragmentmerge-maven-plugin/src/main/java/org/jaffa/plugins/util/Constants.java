@@ -163,7 +163,6 @@ public class Constants {
      * Default start tag for merged components.xml
      */
     public static String COMPONENTS_START_TAG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<!DOCTYPE components>\n" +
             "<components>\n";
     /**
      * Default end tag for merged components.xml
@@ -186,7 +185,7 @@ public class Constants {
     public static final String STRUTS_CONFIG_FILE = "struts-config.xml";
 
     //Tile-Defs file name inside jar
-    public static final String TILE_DEFS_FILE = "tile-defs.xml";
+    public static final String TILE_DEFS_FILE = "tiles-defs.xml";
 
     //components file name inside jar
     public static final String COMPONENTS_FILE = "components.xml";
@@ -248,5 +247,8 @@ public class Constants {
 
     //ComponentTilesDefinitions
     public static final String COMPONENT_DEFINITIONS = "ComponentDefinition";
+
+    //Resources Folder
+    public static final String RESOURCES = "resources";
 
 }

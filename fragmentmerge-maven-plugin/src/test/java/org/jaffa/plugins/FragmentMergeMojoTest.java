@@ -33,7 +33,7 @@ import org.junit.Test;
 
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
-
+import static org.jaffa.plugins.util.Constants.*;
 
 
 /**
@@ -62,23 +62,20 @@ public class FragmentMergeMojoTest extends AbstractMojoTestCase{
         myMojo.classesDirectory = new File(testProject.getBuild().getTestOutputDirectory());
         assertNotNull(myMojo);
         myMojo.execute();
-        FileFinder filesFinder = new FileFinder("*.properties");
         Path testTarget = new File(myMojo.targetDirectory+File.separator+"test-classes"+File.separator+"META-INF").toPath();
-        Files.walkFileTree(testTarget, filesFinder);
-        List<Path> testResourceFiles = filesFinder.getFiles();
-        assertNotNull(findEntryInJar(testResourceFiles, "ApplicationResources.properties"));
-        assertNotNull(findEntryInJar(testResourceFiles, "ApplicationRules_ABC.properties"));
+        FileFinder filesFinder = FileFinder.getInstance(testTarget);
+        List<Path> testResourceFiles = filesFinder.getFilteredFiles("*."+PROPERTIES);
+        assertNotNull(findEntryInJar(testResourceFiles, APPLICATION_RESOURCES+"."+PROPERTIES));
+        assertNotNull(findEntryInJar(testResourceFiles, APPLICATION_RULES_+"ABC."+PROPERTIES));
 
-        filesFinder = new FileFinder("*.xml");
-        Files.walkFileTree(testTarget, filesFinder);
-        testResourceFiles = filesFinder.getFiles();
+        testResourceFiles = filesFinder.getFilteredFiles("*."+XML);
 
-        assertNotNull(findEntryInJar(testResourceFiles, "dwr.xml"));
-        assertNotNull(findEntryInJar(testResourceFiles, "components.xml"));
-        assertNotNull(findEntryInJar(testResourceFiles, "business-functions.xml"));
-        assertNotNull(findEntryInJar(testResourceFiles, "roles.xml"));
-        assertNotNull(findEntryInJar(testResourceFiles, "struts-config.xml"));
-        assertNotNull(findEntryInJar(testResourceFiles, "navigation.xml"));
+        assertNotNull(findEntryInJar(testResourceFiles, DWR_FILE));
+        assertNotNull(findEntryInJar(testResourceFiles, COMPONENTS_FILE));
+        assertNotNull(findEntryInJar(testResourceFiles, BUSINESS_FUNCTIONS+"."+XML));
+        assertNotNull(findEntryInJar(testResourceFiles, ROLES+"."+XML));
+        assertNotNull(findEntryInJar(testResourceFiles, STRUTS_CONFIG_FILE));
+        assertNotNull(findEntryInJar(testResourceFiles, NAVIGATION+"."+XML));
 
     }
 
