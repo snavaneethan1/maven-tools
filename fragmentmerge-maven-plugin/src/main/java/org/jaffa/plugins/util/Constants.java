@@ -104,7 +104,7 @@ public class Constants {
     /**
      * Default Start Tag for tile-defs merged file
      */
-    public static String STRUTS_TILE_DEFS_START_TAG = " <?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+    public static String STRUTS_TILE_DEFS_START_TAG = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
             "\n" +
             " <!DOCTYPE tiles-definitions PUBLIC\n" +
             "       \"-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN\"\n" +
@@ -153,11 +153,11 @@ public class Constants {
     /**
      * Default start tag for merged ApplicationRules_{}.properties, business_functions_{}.xml, roles_{}.xml
      */
-    public static String EMPTY_START_TAG = "\n";
+    public static String EMPTY_START_TAG = "";
     /**
      * Default end tag for merged ApplicationRules_{}.properties, business_functions_{}.xml, roles_{}.xml
      */
-    public static String EMPTY_END_TAG = "\n";
+    public static String EMPTY_END_TAG = "";
 
     /**
      * Default start tag for merged components.xml
