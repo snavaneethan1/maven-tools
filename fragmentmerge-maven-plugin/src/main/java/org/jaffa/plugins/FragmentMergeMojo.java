@@ -116,6 +116,9 @@ public class FragmentMergeMojo extends AbstractMojo{
     String[] skipConfigFiles;
 
 
+    private static final String[] SUPPORTED_FILES = new String[]{DWR_FILE, JAWR_FILE, STRUTS_CONFIG_FILE, ROLES_FILE, NAVIGATION_FILE, BUSINESS_FUNCTIONS_FILE};
+
+
     /**
      * Getter for skipTagForConfigFiles parameter
      * @return
@@ -224,6 +227,9 @@ public class FragmentMergeMojo extends AbstractMojo{
                     //Merge Navigation
                     mergeNavigation();
                 }
+
+                //cleanup any leftover resource files
+                cleanUpResources();
             }
         }catch(IOException io){
             getLog().error(io);
@@ -374,6 +380,15 @@ public class FragmentMergeMojo extends AbstractMojo{
             Files.move(resourceFile, mergedResourceFile, StandardCopyOption.ATOMIC_MOVE);
         }
         return resourceFileExist;
+    }
+
+    private void cleanUpResources() throws IOException {
+        for(String file : SUPPORTED_FILES) {
+            Path resourceFile = Paths.get(classesDirectory + File.separator + RESOURCES, file);
+            if (Files.exists(resourceFile)) {
+                Files.delete(resourceFile);
+            }
+        }
     }
 }
 
