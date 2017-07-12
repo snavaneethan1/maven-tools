@@ -246,20 +246,21 @@ public class FragmentMergeMojo extends AbstractMojo{
     }
 
     private void mergeDwrResources(File dwr) throws IOException {
-        getLog().debug("Starting ApplicationResources Merge Process");
+        getLog().debug("Starting Dwr Merge Process");
         List<Path> dwrResourceFragFiles = fileFinder.getFilteredFiles(DWR+"*."+XFRAGMENT);
         mergeFragmentResources(dwr, dwrResourceFragFiles, DWR_START_TAG, DWR_END_TAG, getSkipTagForConfigFilesList().contains(DWR), true);
-        getLog().debug("End of ApplicationResources Merge Process");
+        getLog().debug("End of Dwr Merge Process");
     }
 
     private void mergeJawrResources(File jawr) throws IOException {
-        getLog().debug("Starting ApplicationResources Merge Process");
+        getLog().debug("Starting Jawr Merge Process");
         Path htmlDirectory = sourceDirectory!=null ? Paths.get(sourceDirectory.getParent() + File.separator + "html") : null;
         if(htmlDirectory!=null) {
-            List<Path> jawrResourceFragFiles = fileFinder.getFilteredFiles(JAWR+"*."+PFRAGMENT);
+            FileFinder jawrFileFinder = FileFinder.getInstance(htmlDirectory);
+            List<Path> jawrResourceFragFiles = jawrFileFinder.getFilteredFiles(JAWR+"*."+PFRAGMENT);
             mergeFragmentResources(jawr, jawrResourceFragFiles, JAWR_START_TAG, JAWR_END_TAG, false, false);
         }
-        getLog().debug("End of ApplicationResources Merge Process");
+        getLog().debug("End of Jawr Merge Process");
     }
 
     private boolean mergeStrutsFormResources(File strutsConfig) throws IOException {
@@ -363,8 +364,10 @@ public class FragmentMergeMojo extends AbstractMojo{
 
     private void mergeFragmentResources(File mergedFile, List<Path> fragments, String startTag, String endTag, Boolean skipTags, Boolean deleteFrags) throws IOException {
         if(skipTags!=null && Boolean.TRUE.equals(skipTags)){
+            getLog().debug("Merging Resources "+ fragments+" to "+mergedFile+" without fragments");
             Fragments.mergeFragmentResourcesWithNoTags(mergedFile, fragments, deleteFrags);
         }else{
+            getLog().debug("Merging Resources "+fragments+" to "+mergedFile+" with Start and End Tags");
             Fragments.mergeFragmentResources(mergedFile, fragments, startTag, endTag, deleteFrags);
         }
     }
@@ -379,6 +382,7 @@ public class FragmentMergeMojo extends AbstractMojo{
             }
             Files.move(resourceFile, mergedResourceFile, StandardCopyOption.ATOMIC_MOVE);
         }
+        getLog().debug(resourceFileExist? "Not doing fragment merge since Resource File exist under resources folder" : "Resource file doesnt exist under resource folder. Looking for fragments");
         return resourceFileExist;
     }
 
