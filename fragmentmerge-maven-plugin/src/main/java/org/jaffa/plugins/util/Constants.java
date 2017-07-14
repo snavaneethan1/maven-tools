@@ -221,11 +221,20 @@ public class Constants {
     //Business Functions
     public static final String BUSINESS_FUNCTIONS = "business-functions";
 
+    //Business Functions
+    public static final String BUSINESS_FUNCTIONS_FILE = "business-functions.xml";
+
     //Roles
     public static final String ROLES = "roles";
 
+    //Roles
+    public static final String ROLES_FILE = "roles.xml";
+
     //Navigation
     public static final String NAVIGATION = "navigation";
+
+    //Navigation
+    public static final String NAVIGATION_FILE = "navigation.xml";
 
     //Dwr
     public static final String DWR = "dwr";
