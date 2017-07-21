@@ -1,0 +1,1 @@
+<task type='TestPoller' dataBean='com.test.services.polling.TestPoller' autoCreateDataBean='true'/>

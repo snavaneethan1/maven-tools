@@ -157,6 +157,10 @@ public class FragmentMergeMojo extends AbstractMojo{
             File strutsConfig = new File(classesDirectory + META_INF_LOCATION + STRUTS_CONFIG_FILE);
             File tilesDef = new File(classesDirectory + META_INF_LOCATION + TILE_DEFS_FILE);
             File components = new File(classesDirectory + META_INF_LOCATION + COMPONENTS_FILE);
+            File transactions = new File(classesDirectory + META_INF_LOCATION + JAFFA_TRANSACTION_CONFIG+"."+XML);
+            File scheduler = new File(classesDirectory + META_INF_LOCATION + JAFFA_SCHEDULER_CONFIG+"."+XML);
+            File messages = new File(classesDirectory + META_INF_LOCATION + JAFFA_MESSAGING_CONFIG+"."+XML);
+
 
             if (targetDirectory.exists()) {
 
@@ -226,6 +230,26 @@ public class FragmentMergeMojo extends AbstractMojo{
                 if(!getSkipConfigFilesList().contains(NAVIGATION)) {
                     //Merge Navigation
                     mergeNavigation();
+                }
+
+                if(!getSkipConfigFilesList().contains(JAFFA_TRANSACTION_CONFIG) && !moveResourceFileIfExist(JAFFA_TRANSACTION_CONFIG+"."+XML)) {
+                    //Merge Jaffa Transaction Config
+                    mergeJaffaTransactionConfig(transactions);
+                }
+
+                if(!getSkipConfigFilesList().contains(JAFFA_MESSAGING_CONFIG) && !moveResourceFileIfExist(JAFFA_MESSAGING_CONFIG+"."+XML)) {
+                    //Merge Jaffa Messaging Config
+                    mergeJaffaMessagingConfig(messages);
+                }
+
+                if(!getSkipConfigFilesList().contains(JAFFA_SCHEDULER_CONFIG) && !moveResourceFileIfExist(JAFFA_SCHEDULER_CONFIG+"."+XML)) {
+                    //Merge Jaffa Scheduler Config
+                    mergeJaffaSchedulerConfig(scheduler);
+                }
+
+                if(!getSkipConfigFilesList().contains(JMS_JNDI_CONFIG)) {
+                    //Merge JmsJndiConfig
+                    mergeJmsJndiConfig();
                 }
 
                 //cleanup any leftover resource files
@@ -301,6 +325,41 @@ public class FragmentMergeMojo extends AbstractMojo{
         getLog().debug("End of Components Merge Process");
     }
 
+
+    private void mergeJaffaTransactionConfig(File transactions) throws IOException {
+        getLog().debug("Starting Jaffa Transaction Config Merge Process");
+        List<Path> jaffaTransactionConfigResourceFragFiles = fileFinder.getFilteredFiles(JAFFA_TRANSACTION_CONFIG+"*."+XFRAGMENT);
+        mergeFragmentResources(transactions, jaffaTransactionConfigResourceFragFiles, JAFFA_CONFIG_START_TAG, JAFFA_CONFIG_END_TAG);
+        getLog().debug("End of Jaffa Transaction ConfigMerge Process");
+    }
+
+    private void mergeJaffaMessagingConfig(File messages) throws IOException {
+        getLog().debug("Starting Jaffa Messaging Config Merge Process");
+        List<Path> messageConfigResourceFragFiles = fileFinder.getFilteredFiles(JAFFA_MESSAGING_CONFIG+"*."+XFRAGMENT);
+        mergeFragmentResources(messages, messageConfigResourceFragFiles, JAFFA_CONFIG_START_TAG, JAFFA_CONFIG_END_TAG);
+        getLog().debug("End of Jaffa Messaging ConfigMerge Process");
+    }
+
+    private void mergeJaffaSchedulerConfig(File scheduler) throws IOException {
+        getLog().debug("Starting Jaffa Scheduler Config Merge Process");
+        List<Path> schedulerConfigResourceFragFiles = fileFinder.getFilteredFiles(JAFFA_SCHEDULER_CONFIG+"*."+XFRAGMENT);
+        mergeFragmentResources(scheduler, schedulerConfigResourceFragFiles, JAFFA_CONFIG_START_TAG, JAFFA_CONFIG_END_TAG);
+        getLog().debug("End of Jaffa Scheduler ConfigMerge Process");
+    }
+
+    private void mergeJmsJndiConfig() throws IOException {
+        getLog().debug("Starting Jms Jndi Config Merge Process");
+        List<Path> jmsJndiConfigFiles = fileFinder.getFilteredFiles(JMS_JNDI_CONFIG+"*."+XML);
+        if(jmsJndiConfigFiles!=null && jmsJndiConfigFiles.size() > 0) {
+            for (Path jmsJndiConfigFile : jmsJndiConfigFiles) {
+                File mergedJmsJndiConfigFile = new File(classesDirectory + META_INF_LOCATION + jmsJndiConfigFile.getFileName());
+                List<Path> jmsJndiConfigFileList = new ArrayList<>();
+                jmsJndiConfigFileList.add(jmsJndiConfigFile);
+                mergeFragmentResources(mergedJmsJndiConfigFile, jmsJndiConfigFileList, EMPTY_START_TAG, EMPTY_END_TAG);
+            }
+        }
+        getLog().debug("End of Jms Jndi Config Merge Process");
+    }
 
     private void mergeApplicationRules() throws IOException {
         getLog().debug("Starting ApplicationRules Merge Process");

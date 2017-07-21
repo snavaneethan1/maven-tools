@@ -169,6 +169,17 @@ public class Constants {
      */
     public static String COMPONENTS_END_TAG = "\n</components>";
 
+    /**
+     * Default start tag for merged jaffa-transaction-config.xml, jaffa-messaging-config.xml, jaffa-scheduler-config.xml
+     */
+    public static String JAFFA_CONFIG_START_TAG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<config>\n";
+    /**
+     * Default end tag for merged jaffa-transaction-config.xml, jaffa-messaging-config.xml, jaffa-scheduler-config.xml
+     */
+    public static String JAFFA_CONFIG_END_TAG = "\n</config>";
+
+
     //Meta-Inf location inside jar
     public static final String META_INF_LOCATION = File.separator+"META-INF"+File.separator;
 
@@ -223,6 +234,18 @@ public class Constants {
 
     //Business Functions
     public static final String BUSINESS_FUNCTIONS_FILE = "business-functions.xml";
+
+    //Jaffa Transaction Config
+    public static final String JAFFA_TRANSACTION_CONFIG = "jaffa-transaction-config";
+
+    //Jaffa Messaging Config
+    public static final String JAFFA_MESSAGING_CONFIG = "jaffa-messaging-config";
+
+    //Jaffa Schduler Config
+    public static final String JAFFA_SCHEDULER_CONFIG = "jaffa-scheduler-config";
+
+    //Jms Jndi Config
+    public static final String JMS_JNDI_CONFIG = "jms-jndi-config";
 
     //Roles
     public static final String ROLES = "roles";

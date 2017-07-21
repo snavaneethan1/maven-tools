@@ -76,6 +76,10 @@ public class FragmentMergeMojoTest extends AbstractMojoTestCase{
         assertNotNull(findEntryInJar(testResourceFiles, ROLES+"."+XML));
         assertNotNull(findEntryInJar(testResourceFiles, STRUTS_CONFIG_FILE));
         assertNotNull(findEntryInJar(testResourceFiles, NAVIGATION+"."+XML));
+        assertNotNull(findEntryInJar(testResourceFiles, JAFFA_TRANSACTION_CONFIG+"."+XML));
+        assertNotNull(findEntryInJar(testResourceFiles, JAFFA_MESSAGING_CONFIG+"."+XML));
+        assertNotNull(findEntryInJar(testResourceFiles, JAFFA_SCHEDULER_CONFIG+"."+XML));
+        assertNotNull(findEntryInJar(testResourceFiles, JMS_JNDI_CONFIG+"."+XML));
 
     }
 
