@@ -1,0 +1,14 @@
+  <!--This is For Test Message-->
+  <message dataBean  ='com.test.services.TestFileMessage'
+           queueName ='ProcessTest'
+           toClass   ='com.test.services.ProcessTestService'
+           toMethod  ='ProcessTestService'>
+    <lock-check>
+        <param name='test_locks_global'>true</param>
+    </lock-check>
+    <header>
+        <param expression='true' name='correlationType' loggingName='CorrelationType'>bean.correlationType</param>
+        <param expression='true' name='description'>bean.description</param>
+        <param expression='true' name='testId'>bean.testId</param>
+    </header>
+  </message>
