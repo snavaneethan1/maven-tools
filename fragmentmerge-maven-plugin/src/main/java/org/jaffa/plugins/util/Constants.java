@@ -1,7 +1,5 @@
 package org.jaffa.plugins.util;
 
-import java.io.File;
-
 /*
  * ====================================================================
  * JAFFA - Java Application Framework For All
@@ -49,6 +47,12 @@ import java.io.File;
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  * ====================================================================
+ */
+
+import java.io.File;
+
+/**
+ * Definition of all the different constants used by FragmentMergeMojo
  */
 public class Constants {
 
