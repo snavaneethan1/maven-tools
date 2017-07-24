@@ -37,10 +37,8 @@ Add this fragement to your pom
         <artifactId>fragmentmerge-maven-plugin</artifactId>
         <configuration>
         <!-- Optional configuration -->
-          <skipTagForConfigFiles>
-          <!-- to skip start and end tags after all the dwr fragments are merged -->
-            <skipTagForConfigFile>dwr</skipTagForConfigFile>
-          </skipTagForConfigFiles>
+        <!-- Implementation of ICustomResourceDefinition to include additional definitions for fragment merge process -->
+        <customResourceDefinitionClass>com.abc.CustomResourceDefinition</customResourceDefinitionClass>
           <skipConfigFiles>
           <!-- to completely skip merging jawr files -->
             <skipConfigFile>jawr</skipConfigFile>

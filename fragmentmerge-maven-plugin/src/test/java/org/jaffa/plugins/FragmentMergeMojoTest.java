@@ -65,7 +65,7 @@ import org.junit.Test;
 
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
-import static org.jaffa.plugins.util.Constants.*;
+import static org.jaffa.plugins.definitions.ResourceDefinitions.Constants.*;
 
 
 /**
@@ -102,11 +102,11 @@ public class FragmentMergeMojoTest extends AbstractMojoTestCase{
 
         testResourceFiles = filesFinder.getFilteredFiles("*."+XML);
 
-        assertNotNull(findEntryInJar(testResourceFiles, DWR_FILE));
-        assertNotNull(findEntryInJar(testResourceFiles, COMPONENTS_FILE));
+        assertNotNull(findEntryInJar(testResourceFiles, DWR+"."+XML));
+        assertNotNull(findEntryInJar(testResourceFiles, COMPONENTS+"."+XML));
         assertNotNull(findEntryInJar(testResourceFiles, BUSINESS_FUNCTIONS+"."+XML));
         assertNotNull(findEntryInJar(testResourceFiles, ROLES+"."+XML));
-        assertNotNull(findEntryInJar(testResourceFiles, STRUTS_CONFIG_FILE));
+        assertNotNull(findEntryInJar(testResourceFiles, STRUTS_CONFIG+"."+XML));
         assertNotNull(findEntryInJar(testResourceFiles, NAVIGATION+"."+XML));
         assertNotNull(findEntryInJar(testResourceFiles, JAFFA_TRANSACTION_CONFIG+"."+XML));
         assertNotNull(findEntryInJar(testResourceFiles, JAFFA_MESSAGING_CONFIG+"."+XML));
