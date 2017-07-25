@@ -1,0 +1,31 @@
+<!-- Test Transaction -->
+
+<!-- Type Definitions -->
+<type name='TestRequest' singleton='true' label='Test Request'>
+      <display-param name='jaffa_userId' label='[label.Test.Core.TestEntry.TestPostedBy]'/>
+      <display-param name='JMSTimestamp' label='[label.Test.Core.TestEntry.TestSubmittedOn]'/>
+  </type>
+
+  <type name='TestInitialize'  label='Test Initialize'>
+      <display-param name='jaffa_userId' label='[label.Test.Core.TestEntry.TestPostedBy]'/>
+      <display-param name='JMSTimestamp' label='[label.Test.Core.TestEntry.TestSubmittedOn]'/>
+  </type>
+
+<!-- Map TestMessage to TestMessageHandler -->
+<transaction
+    dataBean='com.test.services.TestMessage'
+    type='TestRequest'
+    subType='TestMessage'
+    toClass='ccom.test.services.TestMessageHandler'
+    toMethod='process'
+    description='TestMessage'
+  >
+    <lock-check>
+        <param name='locks_global'>true</param>
+      </lock-check>
+      <header>
+        <param name='correlationType' loggingName='CorrelationType'>TestRequest</param>
+      </header>
+  </transaction>
+
+
