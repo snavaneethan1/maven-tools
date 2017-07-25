@@ -58,13 +58,24 @@ import java.util.Map;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 
-import static org.jaffa.plugins.util.Constants.*;
 
 
 /**
  * A {@link FileVisitor} implementation that scans files and directories.
  */
 public class FileFinder extends SimpleFileVisitor<Path> {
+
+    //pfragment
+    public static final String PFRAGMENT = "pfragment";
+
+    //xfragment
+    public static final String XFRAGMENT = "xfragment";
+
+    //xml
+    public static final String XML = "xml";
+
+    //properties
+    public static final String PROPERTIES = "properties";
 
     private PathMatcher matcher;
 
